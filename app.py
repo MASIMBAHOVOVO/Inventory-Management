@@ -21,12 +21,13 @@ if not os.environ.get('DEEPSEEK_API_KEY'):
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-# Database configuration - update with your credentials
+# Database configuration - using environment variables for cloud deployment
 db_config = {
-    'host': '192.168.0.103',
-    'user': 'root',  # Your MySQL username
-    'password': '',  # Your MySQL password
-    'database': 'U99U_TEST',  # Your database name
+    'host': os.environ.get('MYSQL_HOST', '192.168.0.103'),
+    'user': os.environ.get('MYSQL_USER', 'root'),
+    'password': os.environ.get('MYSQL_PASSWORD', ''),
+    'database': os.environ.get('MYSQL_DATABASE', 'U99U_TEST'),
+    'port': int(os.environ.get('MYSQL_PORT', '3306')),
     # Some older MySQL/MariaDB servers do not support utf8mb4. Default to utf8
     # and allow override via environment variables if the server supports utf8mb4.
     'charset': os.environ.get('MYSQL_CHARSET', 'utf8'),
