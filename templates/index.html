@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodePlanet - Inventory Management</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3a0ca3;
+            --accent: #f72585;
+            --success: #4cc9f0;
+            --warning: #f9c74f;
+            --danger: #f94144;
+            --dark: #212529;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .branch-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .branch-input {
+            padding: 10px 15px;
+            border: 1px solid var(--gray-light);
+            border-radius: 10px;
+            width: 200px;
+            font-size: 16px;
+        }
+        
+        .branch-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s ease;
+        }
+        
+        .branch-btn:hover {
+            background: var(--secondary);
+        }
+        
+        .search-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-input {
+            padding: 10px 15px;
+            border: 1px solid var(--gray-light);
+            border-radius: 10px;
+            width: 300px;
+            font-size: 16px;
+        }
+        
+        .search-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s ease;
+        }
+        
+        .search-btn:hover {
+            background: var(--secondary);
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-title i {
+            background: rgba(67, 97, 238, 0.15);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: var(--gray);
+        }
+        
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .product-id {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .product-name {
+            color: var(--dark);
+        }
+        
+        .stock-level {
+            font-weight: 500;
+        }
+        
+        .low-stock {
+            color: var(--danger);
+        }
+        
+        .medium-stock {
+            color: var(--warning);
+        }
+        
+        .good-stock {
+            color: var(--success);
+        }
+        
+        .order-qty {
+            font-weight: 600;
+            color: var(--secondary);
+        }
+        
+        .chart-card {
+            grid-column: 1 / span 2;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray);
+            font-style: italic;
+        }
+        
+        .demand-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+        
+        .indicator-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+        
+        .peak {
+            background-color: #f94144;
+        }
+        
+        .medium {
+            background-color: #f9c74f;
+        }
+        
+        .low {
+            background-color: #4cc9f0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray);
+        }
+        
+        .branch-info {
+            background: var(--primary-light);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+        
+        @media (max-width: 1200px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-card {
+                grid-column: 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .branch-input, .search-input {
+                width: 100%;
+            }
+            
+            .branch-container, .search-container {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">CP</div>
+                <div class="logo-text">CodePlanet</div>
+            </div>
+            
+            <div class="branch-container">
+                <input type="text" class="branch-input" id="branchCode" placeholder="Enter branch code">
+                <button class="branch-btn" onclick="loadBranchData()">
+                    <i class="fas fa-store"></i> Load Branch
+                </button>
+            </div>
+            
+            <div class="search-container" id="search-container" style="display: none;">
+                <input type="text" class="search-input" id="productSearch" placeholder="Enter product code">
+                <button class="search-btn" id="productSearchBtn" onclick="searchProduct()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </header>
+        
+        <div id="branch-data" style="display: none;">
+            <div class="branch-info" style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                <div><i class="fas fa-store"></i> Viewing data for branch: <span id="current-branch"></span></div>
+                <div id="origin-filters" style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 8px;">
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                        <input type="checkbox" id="origin-all" checked>
+                        <span>ALL</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                        <input type="checkbox" id="origin-imported">
+                        <span>IMPORTED</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                        <input type="checkbox" id="origin-local">
+                        <span>LOCAL</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="content-grid">
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Reorder Recommendations Based on Sales</span>
+                    </div>
+                    <div class="table-container" id="sales-based-table">
+                        <div class="loading">Enter branch code and click "Load Branch"</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fas fa-boxes"></i>
+                        <span>Reorder Recommendations Based on Stock Levels</span>
+                    </div>
+                    <div class="table-container" id="stock-based-table">
+                        <div class="loading">Enter branch code and click "Load Branch"</div>
+                    </div>
+                </div>
+                
+                <div class="card chart-card">
+                    <div class="card-title">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Product Sales Pattern</span>
+                    </div>
+                    <div id="chart-placeholder">
+                        <div class="no-data">
+                            <i class="fas fa-search" style="font-size: 48px; margin-bottom: 15px;"></i>
+                            <h3>Search for a product to view sales pattern</h3>
+                            <p>Enter a product code in the search box above to see its sales pattern</p>
+                        </div>
+                    </div>
+                    <div class="chart-container" id="sales-chart-container" style="display: none;">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                    <div class="demand-indicator" id="demand-indicator" style="display: none;">
+                        <div class="indicator">
+                            <div class="indicator-color peak"></div>
+                            <span>Peak Demand</span>
+                        </div>
+                        <div class="indicator">
+                            <div class="indicator-color medium"></div>
+                            <span>Medium Demand</span>
+                        </div>
+                        <div class="indicator">
+                            <div class="indicator-color low"></div>
+                            <span>Low Demand</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chat widget (visible only after branch is loaded) -->
+            <div class="card" id="chat-card" style="margin-top: 20px; display: none;">
+                <div class="card-title">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Assistant</span>
+                </div>
+                <div id="chat-window" style="height: 260px; overflow-y: auto; border: 1px solid var(--gray-light); border-radius: 10px; padding: 12px; background: #fff;">
+                    <div class="message" style="color: var(--gray);">Ask a question about your data. The assistant will analyze your database.</div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <input type="text" id="chat-input" class="search-input" placeholder="Type your question..." style="flex: 1;">
+                    <button class="search-btn" id="chat-send-btn"><i class="fas fa-paper-plane"></i> Send</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="no-branch" style="text-align: center; padding: 40px;">
+            <i class="fas fa-store" style="font-size: 64px; color: var(--gray-light); margin-bottom: 20px;"></i>
+            <h2>Welcome to CodePlanet Inventory Management</h2>
+            <p>Please enter a branch code to view inventory data</p>
+        </div>
+    </div>
+
+    <script>
+        let salesChart = null;
+        let currentBranch = '';
+        let currentOrigin = 'ALL';
+        
+        // Load data for the selected branch
+        async function loadBranchData() {
+            const branchCode = document.getElementById('branchCode').value.trim();
+            
+            if (!branchCode) {
+                alert('Please enter a branch code');
+                return;
+            }
+            
+            currentBranch = branchCode;
+            document.getElementById('current-branch').textContent = branchCode;
+            document.getElementById('branch-data').style.display = 'block';
+            document.getElementById('no-branch').style.display = 'none';
+            document.getElementById('search-container').style.display = 'flex';
+            document.getElementById('chat-card').style.display = 'block';
+            
+            // Initialize origin filters
+            setupOriginFilters();
+            // Load both sales and stock recommendations
+            fetchSalesBasedRecommendations(branchCode, 10, currentOrigin);
+            fetchStockBasedRecommendations(branchCode, 10, currentOrigin);
+        }
+        
+        // Fetch reorder recommendations based on sales
+        async function fetchSalesBasedRecommendations(branchCode, limit = 10, origin = 'ALL') {
+            try {
+                document.getElementById('sales-based-table').innerHTML = '<div class="loading">Loading data...</div>';
+                
+                const response = await fetch(`/get_sales_recommendations?branch_code=${encodeURIComponent(branchCode)}&limit=${encodeURIComponent(limit)}&stock_origin=${encodeURIComponent(origin)}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    document.getElementById('sales-based-table').innerHTML = 
+                        `<div class="loading">${data.error}</div>`;
+                    return;
+                }
+                
+                if (data.length === 0) {
+                    document.getElementById('sales-based-table').innerHTML = 
+                        `<div class="loading">No sales data found for this branch</div>`;
+                    return;
+                }
+                
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product ID</th>
+                                <th>Product Name</th>
+                                <th>Sales (Last 30 Days)</th>
+                                <th>Current Stock</th>
+                                <th>Order Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                
+                data.forEach(item => {
+                    const stockClass = getStockClass(item.current_stock, item.min_stock_level);
+                    
+                    html += `
+                        <tr>
+                            <td class="product-id">${item.product_id}</td>
+                            <td class="product-name">${item.product_name}</td>
+                            <td>${item.sales_last_30_days} units</td>
+                            <td class="stock-level ${stockClass}">${item.current_stock}</td>
+                            <td class="order-qty">${item.recommended_order}</td>
+                        </tr>`;
+                });
+                
+                html += '</tbody></table>';
+                if (limit < 50 && data.length >= 10) {
+                    html += `
+                        <div style="margin-top: 12px; text-align: right; display: flex; gap: 8px; justify-content: flex-end;">
+                            <button class="search-btn" id="showMoreSalesBtn">Show More</button>
+                        </div>`;
+                } else if (limit >= 50) {
+                    html += `
+                        <div style="margin-top: 12px; text-align: right; display: flex; gap: 8px; justify-content: flex-end;">
+                            <button class="search-btn" id="showLessSalesBtn">Show Less</button>
+                        </div>`;
+                }
+                document.getElementById('sales-based-table').innerHTML = html;
+                const showMoreSalesBtn = document.getElementById('showMoreSalesBtn');
+                if (showMoreSalesBtn) {
+                    showMoreSalesBtn.addEventListener('click', function() {
+                        showMoreSalesBtn.disabled = true;
+                        showMoreSalesBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                        fetchSalesBasedRecommendations(branchCode, 50, currentOrigin);
+                    });
+                }
+                const showLessSalesBtn = document.getElementById('showLessSalesBtn');
+                if (showLessSalesBtn) {
+                    showLessSalesBtn.addEventListener('click', function() {
+                        showLessSalesBtn.disabled = true;
+                        showLessSalesBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                        fetchSalesBasedRecommendations(branchCode, 10, currentOrigin);
+                    });
+                }
+            } catch (error) {
+                document.getElementById('sales-based-table').innerHTML = 
+                    `<div class="loading">Error loading data: ${error.message}</div>`;
+            }
+        }
+        
+        // Fetch reorder recommendations based on stock levels
+        async function fetchStockBasedRecommendations(branchCode, limit = 10, origin = 'ALL') {
+            try {
+                document.getElementById('stock-based-table').innerHTML = '<div class="loading">Loading data...</div>';
+                
+                const response = await fetch(`/get_stock_recommendations?branch_code=${encodeURIComponent(branchCode)}&limit=${encodeURIComponent(limit)}&stock_origin=${encodeURIComponent(origin)}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    document.getElementById('stock-based-table').innerHTML = 
+                        `<div class="loading">${data.error}</div>`;
+                    return;
+                }
+                
+                if (data.length === 0) {
+                    document.getElementById('stock-based-table').innerHTML = 
+                        `<div class="loading">No stock data found for this branch</div>`;
+                    return;
+                }
+                
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product ID</th>
+                                <th>Product Name</th>
+                                <th>Current Stock</th>
+                                <th>Min Stock Level</th>
+                                <th>Order Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                
+                data.forEach(item => {
+                    const stockClass = getStockClass(item.current_stock, item.min_stock_level);
+                    
+                    html += `
+                        <tr>
+                            <td class="product-id">${item.product_id}</td>
+                            <td class="product-name">${item.product_name}</td>
+                            <td class="stock-level ${stockClass}">${item.current_stock}</td>
+                            <td>${item.min_stock_level}</td>
+                            <td class="order-qty">${item.recommended_order}</td>
+                        </tr>`;
+                });
+                
+                html += '</tbody></table>';
+                if (limit < 50 && data.length >= 10) {
+                    html += `
+                        <div style="margin-top: 12px; text-align: right; display: flex; gap: 8px; justify-content: flex-end;">
+                            <button class="search-btn" id="showMoreStockBtn">Show More</button>
+                        </div>`;
+                } else if (limit >= 50) {
+                    html += `
+                        <div style="margin-top: 12px; text-align: right; display: flex; gap: 8px; justify-content: flex-end;">
+                            <button class="search-btn" id="showLessStockBtn">Show Less</button>
+                        </div>`;
+                }
+                document.getElementById('stock-based-table').innerHTML = html;
+                const showMoreStockBtn = document.getElementById('showMoreStockBtn');
+                if (showMoreStockBtn) {
+                    showMoreStockBtn.addEventListener('click', function() {
+                        showMoreStockBtn.disabled = true;
+                        showMoreStockBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                        fetchStockBasedRecommendations(branchCode, 50, currentOrigin);
+                    });
+                }
+                const showLessStockBtn = document.getElementById('showLessStockBtn');
+                if (showLessStockBtn) {
+                    showLessStockBtn.addEventListener('click', function() {
+                        showLessStockBtn.disabled = true;
+                        showLessStockBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                        fetchStockBasedRecommendations(branchCode, 10, currentOrigin);
+                    });
+                }
+            } catch (error) {
+                document.getElementById('stock-based-table').innerHTML = 
+                    `<div class="loading">Error loading data: ${error.message}</div>`;
+            }
+        }
+
+        function setupOriginFilters() {
+            const allEl = document.getElementById('origin-all');
+            const impEl = document.getElementById('origin-imported');
+            const locEl = document.getElementById('origin-local');
+            // Ensure only one is checked at a time
+            function setOnly(target) {
+                allEl.checked = (target === allEl);
+                impEl.checked = (target === impEl);
+                locEl.checked = (target === locEl);
+                currentOrigin = allEl.checked ? 'ALL' : impEl.checked ? 'IMPORTED' : 'LOCAL';
+                if (currentBranch) {
+                    fetchSalesBasedRecommendations(currentBranch, 10, currentOrigin);
+                    fetchStockBasedRecommendations(currentBranch, 10, currentOrigin);
+                }
+            }
+            allEl.onchange = () => setOnly(allEl);
+            impEl.onchange = () => setOnly(impEl);
+            locEl.onchange = () => setOnly(locEl);
+        }
+        
+        // Helper function to determine stock level class
+        function getStockClass(currentStock, minStockLevel) {
+            if (currentStock < minStockLevel) return 'low-stock';
+            if (currentStock < minStockLevel * 1.5) return 'medium-stock';
+            return 'good-stock';
+        }
+        
+        // Search for a product to view sales pattern
+        async function searchProduct() {
+            const productCode = document.getElementById('productSearch').value.trim();
+            const branchCode = document.getElementById('branchCode').value.trim();
+            const btn = document.getElementById('productSearchBtn');
+            
+            if (!productCode) {
+                alert('Please enter a product code');
+                return;
+            }
+            
+            if (!branchCode) {
+                alert('Please enter a branch code first');
+                return;
+            }
+            
+            let originalBtnHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            try {
+                const response = await fetch(`/get_product_sales_pattern?product_code=${encodeURIComponent(productCode)}&branch_code=${encodeURIComponent(branchCode)}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    alert(`Error: ${data.error}`);
+                    return;
+                }
+                
+                // Hide placeholder and show chart
+                document.getElementById('chart-placeholder').style.display = 'none';
+                document.getElementById('sales-chart-container').style.display = 'block';
+                document.getElementById('demand-indicator').style.display = 'flex';
+                
+                // Render the chart with dynamic labels
+                renderSalesChart(data.product_name, data.monthly_sales, data.monthly_labels);
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+            }
+        }
+        
+        // Render sales chart
+        function renderSalesChart(productName, monthlySales, monthLabels) {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            
+            // Destroy previous chart if it exists
+            if (salesChart) {
+                salesChart.destroy();
+            }
+            
+            // Calculate average to determine peak/medium/low months
+            const totalSales = monthlySales.reduce((sum, value) => sum + value, 0);
+            const averageSales = totalSales / monthlySales.length;
+            
+            // Define background colors based on sales volume
+            const backgroundColors = monthlySales.map(sales => {
+                if (sales > averageSales * 1.2) return 'rgba(249, 65, 68, 0.7)'; // Peak - red
+                if (sales > averageSales * 0.8) return 'rgba(249, 199, 79, 0.7)'; // Medium - yellow
+                return 'rgba(76, 201, 240, 0.7)'; // Low - blue
+            });
+            
+            // Create the chart
+            salesChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: monthLabels,
+                    datasets: [{
+                        label: 'Units Sold',
+                        data: monthlySales,
+                        backgroundColor: backgroundColors,
+                        borderColor: 'rgba(67, 97, 238, 0.8)',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Monthly Sales Pattern for ' + productName,
+                            font: {
+                                size: 16
+                            }
+                        },
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Units Sold: ${context.raw}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Units Sold'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Months'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Allow pressing Enter to search
+        document.getElementById('branchCode').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loadBranchData();
+            }
+        });
+        
+        document.getElementById('productSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchProduct();
+            }
+        });
+
+        // Chat interactions
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+            const branchCode = document.getElementById('branchCode').value.trim();
+
+            const chatWindow = document.getElementById('chat-window');
+            const userDiv = document.createElement('div');
+            userDiv.style.margin = '6px 0';
+            userDiv.innerHTML = `<strong>You:</strong> ${message}`;
+            chatWindow.appendChild(userDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            input.value = '';
+
+            const thinking = document.createElement('div');
+            thinking.style.margin = '6px 0';
+            thinking.style.color = 'var(--gray)';
+            thinking.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Thinking...`;
+            chatWindow.appendChild(thinking);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            try {
+                const resp = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message, branch_code: branchCode })
+                });
+                const data = await resp.json();
+                thinking.remove();
+                const botDiv = document.createElement('div');
+                botDiv.style.margin = '6px 0';
+                if (data.error) {
+                    botDiv.innerHTML = `<strong>Assistant:</strong> ${data.error}`;
+                } else {
+                    let answerHtml = data.answer || 'Done.';
+                    if (data.sql) {
+                        answerHtml += `<div style="margin-top:6px; font-size: 12px; color: var(--gray);">SQL: <code>${data.sql}</code></div>`;
+                    }
+                    botDiv.innerHTML = `<strong>Assistant:</strong> ${answerHtml}`;
+                }
+                chatWindow.appendChild(botDiv);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            } catch (err) {
+                thinking.remove();
+                const errDiv = document.createElement('div');
+                errDiv.style.margin = '6px 0';
+                errDiv.innerHTML = `<strong>Assistant:</strong> Error: ${err.message}`;
+                chatWindow.appendChild(errDiv);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+        }
+
+        document.getElementById('chat-send-btn').addEventListener('click', sendChatMessage);
+        document.getElementById('chat-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        });
+    </script>
+</body>
+</html>
