@@ -35,7 +35,16 @@ db_config = {
 }
 
 def get_db_connection():
-    return mysql.connector.connect(**db_config)
+    conn = mysql.connector.connect(**db_config)
+    # The reporting queries aggregate over large stock/invoice tables and can
+    # exceed the server's max_join_size, which raises MySQL error 1104
+    # ("The SELECT would examine more than MAX_JOIN_SIZE rows") when
+    # sql_big_selects is disabled. Enable it for the session so these
+    # legitimate large reads are allowed to run.
+    cursor = conn.cursor()
+    cursor.execute("SET SESSION SQL_BIG_SELECTS=1")
+    cursor.close()
+    return conn
 
 def get_database_schema_snapshot():
     """Return a lightweight schema description for the assistant prompt."""
